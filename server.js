@@ -2,7 +2,24 @@ const express = require('express');
 const app = express();
 const path = require('path');
 //process.env.PORT will find port variable if there is one in the deployment or use local port 3500
-const PORT = process.env.PORT || 3500
+const PORT = process.env.PORT || 3500;
+const {logger} = require('./middleware/logger')
+const errorHandler = require('./middleware/errorHandler')
+const cookieParser = require('cookie-parser');
+const corsOptions = require('./config/corsOptions')
+const cors = require('cors');
+
+//allows outside sources to make requests to your api
+app.use(cors(corsOptions));
+
+//lets app recieve and parse JSON, VERY IMPORTANT
+app.use(express.json());
+
+//third party middleware
+app.use(cookieParser());
+
+//custom middleware
+app.use(logger);
 
 //look inside folder we're in now, then look inside public for static files (css images)
 //built in middleware
@@ -21,5 +38,8 @@ app.all('*', (req, res) => {
         res.status(404).send('404 not found')
     }
 })
+
+//use error handler all the way below everything except for the listener.
+app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Server running on Port ${PORT}`));
